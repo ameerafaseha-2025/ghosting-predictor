@@ -1,0 +1,20 @@
+import pandas as pd
+from sklearn.linear_model import LogisticRegression
+import pickle
+
+data = pd.DataFrame({
+    "reply_time":[1,5,10,15],
+    "app_usage":[300,200,100,50],
+    "swipe_ratio":[80,60,40,20],
+    "likes_received":[500,300,100,20],
+    "mutual_matches":[100,50,10,2],
+    "ghosted":[0,0,1,1]
+})
+
+X = data.drop("ghosted", axis=1)
+y = data["ghosted"]
+
+model = LogisticRegression()
+model.fit(X,y)
+
+pickle.dump(model, open("ghosting_model.pkl", "wb"))
