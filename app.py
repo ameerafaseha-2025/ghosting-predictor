@@ -1,64 +1,130 @@
 import streamlit as st
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
+import pickle
+
+# PAGE CONFIG
+st.set_page_config(
+    page_title="Ghost Buster",
+    page_icon="💔",
+    layout="wide"
+)
+
+# LOAD MODEL
+model = pickle.load(open("ghosting_model.pkl", "rb"))
+
+# LOAD FEATURE NAMES
+feature_names = pickle.load(open("feature_names.pkl", "rb"))
 
 # TITLE
-st.title("Likelihood of Ghosting Predictor")
+st.title("💔 Ghost Buster")
+st.subheader("Predicting the Likelihood of Ghosting")
 
-st.write("Fill in the information below to predict the likelihood of ghosting.")
+st.write("""
+This machine learning dashboard predicts the likelihood of ghosting
+based on dating app behavior patterns.
+""")
 
-# LOAD DATA
-data = pd.read_csv("ghosting_dataset.csv")
-
-# FEATURES
-X = data[["reply_time", "interest_level", "message_frequency", "relationship_stage"]]
-
-# TARGET
-y = data["ghosted"]
-
-# TRAIN MODEL
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
-
-model = LogisticRegression()
-model.fit(X_train, y_train)
+# SIDEBAR
+st.sidebar.header("User Behavior Input")
 
 # USER INPUTS
-reply_time = st.slider("Reply Time (hours)", 1, 24, 5)
+income_bracket = st.sidebar.slider("Income Bracket", 0, 5, 2)
 
-interest_level = st.slider("Interest Level", 1, 10, 5)
+education_level = st.sidebar.slider("Education Level", 0, 3, 1)
 
-message_frequency = st.slider("Messages per Day", 1, 20, 5)
-
-relationship_stage = st.selectbox(
-    "Relationship Stage",
-    [1, 2, 3],
-    format_func=lambda x:
-    "Talking Stage" if x == 1 else
-    "Close" if x == 2 else
-    "Serious"
+app_usage_time_min = st.sidebar.slider(
+    "Daily App Usage Time (minutes)",
+    0,
+    500,
+    120
 )
+
+swipe_right_ratio = st.sidebar.slider(
+    "Swipe Right Ratio",
+    0,
+    100,
+    50
+)
+
+likes_received = st.sidebar.slider(
+    "Likes Received",
+    0,
+    1000,
+    100
+)
+
+mutual_matches = st.sidebar.slider(
+    "Mutual Matches",
+    0,
+    500,
+    50
+)
+
+message_sent_count = st.sidebar.slider(
+    "Messages Sent",
+    0,
+    500,
+    50
+)
+
+emoji_usage_rate = st.sidebar.slider(
+    "Emoji Usage Rate",
+    0.0,
+    1.0,
+    0.5
+)
+
+# INPUT DATA
+input_dict = {
+    'income_bracket': income_bracket,
+    'education_level': education_level,
+    'app_usage_time_min': app_usage_time_min,
+    'swipe_right_ratio': swipe_right_ratio,
+    'likes_received': likes_received,
+    'mutual_matches': mutual_matches,
+    'message_sent_count': message_sent_count,
+    'emoji_usage_rate': emoji_usage_rate
+}
+
+# Create DataFrame
+input_data = pd.DataFrame([input_dict])
+
+# Add missing columns automatically
+for col in feature_names:
+    if col not in input_data.columns:
+        input_data[col] = 0
+
+# Reorder columns
+input_data = input_data[feature_names]
+
+# DISPLAY INPUT
+st.subheader("📋 User Input")
+st.write(input_data)
 
 # PREDICT BUTTON
 if st.button("Predict Ghosting Likelihood"):
 
-    input_data = [[
-        reply_time,
-        interest_level,
-        message_frequency,
-        relationship_stage
-    ]]
-
     prediction = model.predict(input_data)[0]
+
     probability = model.predict_proba(input_data)[0][1]
 
-    st.subheader("Prediction Result")
+    st.subheader("📊 Prediction Result")
 
     if prediction == 1:
-        st.error("High chance of ghosting")
+        st.error("⚠️ High Likelihood of Ghosting")
     else:
-        st.success("Low chance of ghosting")
+        st.success("✅ Low Likelihood of Ghosting")
 
-    st.write(f"Probability of ghosting: {probability:.2f}")
+    st.metric(
+        label="Ghosting Probability",
+        value=f"{probability:.2%}"
+    )
+
+# FOOTER
+st.markdown("---")
+
+st.write("""
+WIA1006/WID3006 Machine Learning Project  
+Theme: Likelihood of Ghosting  
+Group Project: Ghost Buster
+""")
