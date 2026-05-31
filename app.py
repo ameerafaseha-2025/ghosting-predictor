@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import pickle
@@ -10,7 +11,7 @@ st.set_page_config(
 )
 
 # LOAD MODEL
-model = pickle.load(open("ghosting_model.pkl", "rb"))
+model = pickle.load(open("best_automl_ghosting_pipeline.pkl", "rb"))
 
 # LOAD FEATURE NAMES
 feature_names = pickle.load(open("feature_names.pkl", "rb"))
