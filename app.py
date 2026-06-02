@@ -2,6 +2,9 @@
 import streamlit as st
 import pandas as pd
 import pickle
+from pycaret.classification import load_model, predict_model
+
+
 
 # PAGE CONFIG
 st.set_page_config(
@@ -12,6 +15,8 @@ st.set_page_config(
 
 # LOAD MODEL
 model = pickle.load(open("best_automl_ghosting_pipeline.pkl", "rb"))
+
+mode2 = load_model("best_automl_ghosting_pipeline")
 
 # LOAD FEATURE NAMES
 feature_names = pickle.load(open("feature_names.pkl", "rb"))
@@ -105,20 +110,24 @@ st.write(input_data)
 # PREDICT BUTTON
 if st.button("Predict Ghosting Likelihood"):
 
-    prediction = model.predict(input_data)[0]
+    result = predict_model(mode2, data=input_data)
+    prediction2 = result["prediction_label"][0]
+    probability2 = result["prediction_score"][0]
 
-    probability = model.predict_proba(input_data)[0][1]
+    #prediction = model.predict(input_data)[0]
+
+    #probability = model.predict_proba(input_data)[0][1]
 
     st.subheader("📊 Prediction Result")
 
-    if prediction == 1:
+    if prediction2 == 1:
         st.error("⚠️ High Likelihood of Ghosting")
     else:
         st.success("✅ Low Likelihood of Ghosting")
 
     st.metric(
         label="Ghosting Probability",
-        value=f"{probability:.2%}"
+        value=f"{probability2:.2%}"
     )
 
 # FOOTER
