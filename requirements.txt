@@ -1,7 +1,5 @@
 streamlit
 pandas
-numpy
+pycaret
 scikit-learn
 xgboost
-plotly
-pycaret
